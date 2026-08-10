@@ -40,17 +40,14 @@ constexpr const char* kBold   = "\x1b[1m";
 constexpr const char* kDim    = "\x1b[2m";
 constexpr const char* kReset  = "\x1b[0m";
 
-constexpr const char* RED    = kRed;
-constexpr const char* GREEN  = kGreen;
-constexpr const char* YEL    = kYellow;
-constexpr const char* BLUE   = kBlue;
-constexpr const char* MAG    = kMagenta;
-constexpr const char* CYAN   = kCyan;
-constexpr const char* BOLD   = kBold;
-constexpr const char* DIM    = kDim;
-constexpr const char* RST    = kReset;
-
+// Mutable so --no-color can blank them at parse time (before any rendering).
+std::string RED = kRed, GREEN = kGreen, YEL = kYellow, BLUE = kBlue,
+            MAG = kMagenta, CYAN = kCyan, BOLD = kBold, DIM = kDim, RST = kReset;
 bool g_color = true;
+
+static void disable_colors() {
+  RED = GREEN = YEL = BLUE = MAG = CYAN = BOLD = DIM = RST = "";
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────
 struct LoadAvg {
@@ -236,7 +233,7 @@ static std::string fmt_boot_time(unsigned long long btime) {
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────
-static const char* pct_color(double pct) {
+static std::string pct_color(double pct) {
   return pct > 80.0 ? RED : (pct > 50.0 ? YEL : GREEN);
 }
 
@@ -249,9 +246,10 @@ static void print_snapshot(const Snapshot& s, const Rates& r, std::string_view w
   char buf[256];
   std::snprintf(buf, sizeof buf,
     "%s%-18s%s%s1min %.2f%s  %s5min %.2f%s  %s15min %.2f%s   %s%ld/%ld tasks%s  last pid %ld",
-    CYAN, "LOAD AVERAGE", RST,
-    DIM, s.load.load1, RST, DIM, s.load.load5, RST, DIM, s.load.load15, RST,
-    DIM, s.load.running, s.load.total, DIM, s.load.last_pid);
+    CYAN.c_str(), "LOAD AVERAGE", RST.c_str(),
+    DIM.c_str(), s.load.load1, RST.c_str(), DIM.c_str(), s.load.load5, RST.c_str(),
+    DIM.c_str(), s.load.load15, RST.c_str(),
+    DIM.c_str(), s.load.running, s.load.total, DIM.c_str(), s.load.last_pid);
   std::println(std::cout, "{}", buf);
 
   std::println(std::cout, "{}{:<18}{} total {}{}{}   avg {}{:.1f}/s{}",
@@ -266,10 +264,10 @@ static void print_snapshot(const Snapshot& s, const Rates& r, std::string_view w
 
   std::snprintf(buf, sizeof buf,
     "%s%-18s%s running %s%ld%s   blocked %s%ld%s   %savg runnable %s%.1f%%%s  blocked %s%.1f%%%s",
-    CYAN, "RUN QUEUE", RST,
-    BOLD, s.stat.procs_running, RST,
-    BOLD, s.stat.procs_blocked, RST,
-    DIM, BOLD, r.runnable_pct, RST, DIM, r.blocked_pct, RST);
+    CYAN.c_str(), "RUN QUEUE", RST.c_str(),
+    BOLD.c_str(), s.stat.procs_running, RST.c_str(),
+    BOLD.c_str(), s.stat.procs_blocked, RST.c_str(),
+    DIM.c_str(), BOLD.c_str(), r.runnable_pct, RST.c_str(), DIM.c_str(), r.blocked_pct, RST.c_str());
   std::println(std::cout, "{}", buf);
 
   std::println(std::cout, "{}{:<18}{} {}{}   (uptime {})",
@@ -286,9 +284,9 @@ static void print_snapshot(const Snapshot& s, const Rates& r, std::string_view w
     char row[160];
     std::snprintf(row, sizeof row,
       "%s%-6s%s %s%7.1f%%%s %s%7.1f%%%s %10s %8.1f",
-      BOLD, c.cpu.c_str(), RST,
-      pct_color(c.runnable_pct), c.runnable_pct, RST,
-      pct_color(c.blocked_pct), c.blocked_pct, RST,
+      BOLD.c_str(), c.cpu.c_str(), RST.c_str(),
+      pct_color(c.runnable_pct).c_str(), c.runnable_pct, RST.c_str(),
+      pct_color(c.blocked_pct).c_str(), c.blocked_pct, RST.c_str(),
       fmt_count(c.switches).c_str(), c.switches_per_s);
     std::println(std::cout, "{}", row);
   }
@@ -481,7 +479,7 @@ int main(int argc, char** argv) {
     if ((a == "-w" || a == "--watch") && i + 1 < argc) { interval = std::stoi(argv[++i]); watch = true; }
     else if (a == "-j" || a == "--json") json = true;
     else if ((a == "-t" || a == "--top") && i + 1 < argc) top = std::stoi(argv[++i]);
-    else if (a == "-c" || a == "--no-color") g_color = false;
+    else if (a == "-c" || a == "--no-color") { g_color = false; disable_colors(); }
     else if (a == "-h" || a == "--help") { print_help(); return 0; }
     else if (a == "--selftest") selftest = true;
     else {
