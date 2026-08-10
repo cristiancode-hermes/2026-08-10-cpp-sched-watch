@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1e1e2e;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 40px;
+  }
+  .terminal {
+    background: #181825;
+    border-radius: 12px;
+    padding: 24px 28px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #cdd6f4;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    max-width: 940px;
+    width: 100%;
+    border: 1px solid #313244;
+  }
+  .terminal .title-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding-bottom: 16px; border-bottom: 1px solid #313244;
+    margin-bottom: 16px;
+  }
+  .terminal .title-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .terminal .title-bar .dot.r { background: #f38ba8; }
+  .terminal .title-bar .dot.y { background: #f9e2af; }
+  .terminal .title-bar .dot.g { background: #a6e3a1; }
+  .terminal .title-bar .title { margin-left: 12px; font-size: 13px; color: #6c7086; }
+  .terminal .line { white-space: pre; }
+  .terminal .highlight { color: #89b4fa; }
+  .terminal .green { color: #a6e3a1; }
+  .terminal .yellow { color: #f9e2af; }
+  .terminal .red { color: #f38ba8; }
+  .terminal .dim { color: #6c7086; }
+  .terminal .cyan { color: #89dceb; }
+  .terminal .bold { color: #cdd6f4; }
+  .terminal .sep { color: #45475a; }
+  .terminal .prompt { color: #a6adc8; }
+  .terminal .header { color: #f5e0dc; }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <div class="title-bar">
+    <div class="dot r"></div>
+    <div class="dot y"></div>
+    <div class="dot g"></div>
+    <span class="title">sched-watch — Scheduler Watch (C++23)</span>
+  </div>
+
+  <div class="line prompt">  $ ./sched-watch</div>
+  <div class="line bold">  Scheduler Watch — /proc/stat + /proc/schedstat + /proc/loadavg  (rates: avg since boot, uptime 28d 08:08:33)</div>
+  <div class="line sep">  -------------------------------------------------------------------------------</div>
+  <div class="line"><span class="cyan">  LOAD AVERAGE     </span><span class="dim">1min </span>0.13  <span class="dim">5min </span>0.14  <span class="dim">15min</span> 0.10   <span class="dim">1/731 tasks</span>  last pid 599883</div>
+  <div class="line"><span class="cyan">  CONTEXT SWITCHES </span> total <span class="bold">2.83G</span>   avg <span class="bold">1154.8/s</span></div>
+  <div class="line"><span class="cyan">  PROCESS FORKS    </span> total <span class="bold">7.1M</span>   avg <span class="bold">2.9/s</span></div>
+  <div class="line"><span class="cyan">  RUN QUEUE        </span> running <span class="bold">1</span>   blocked <span class="bold">0</span>   <span class="dim">avg runnable</span> <span class="bold">13.5%</span>  blocked <span class="bold">1.6%</span></div>
+  <div class="line"><span class="cyan">  BOOT TIME        </span> <span class="bold">2026-07-12 19:24:16 UTC</span>   (uptime 28d 08:08:33)</div>
+  <div class="line"></div>
+  <div class="line bold">  PER-CPU SCHEDULER PRESSURE  (runnable + blocked queue time since boot)</div>
+  <div class="line"><span class="dim">  CPU     RUNNABLE   BLOCKED   SWITCHES      SW/s</span></div>
+  <div class="line">  <span class="bold">cpu0</span>     <span class="green">13.5%</span>    <span class="green">1.6%</span>     400.9M    163.7</div>
+  <div class="line">  <span class="bold">cpu1</span>     <span class="green">13.5%</span>    <span class="green">1.6%</span>     395.8M    161.7</div>
+  <div class="line">  <span class="bold">cpu2</span>     <span class="green">13.5%</span>    <span class="yellow">1.7%</span>     398.2M    162.6</div>
+  <div class="line">  <span class="bold">cpu3</span>     <span class="green">13.6%</span>    <span class="green">1.6%</span>     397.1M    162.2</div>
+  <div class="line dim">  cpus: 4</div>
+  <div class="line"></div>
+
+  <div class="line prompt">  $ ./sched-watch --watch 2</div>
+  <div class="line bold">  Scheduler Watch — /proc/stat + /proc/schedstat + /proc/loadavg  (rates: last 2s)</div>
+  <div class="line sep">  -------------------------------------------------------------------------------</div>
+  <div class="line"><span class="cyan">  LOAD AVERAGE     </span><span class="dim">1min </span>0.21  <span class="dim">5min </span>0.15  <span class="dim">15min</span> 0.10   <span class="dim">1/732 tasks</span>  last pid 599942</div>
+  <div class="line"><span class="cyan">  CONTEXT SWITCHES </span> total <span class="bold">2.83G</span>   <span class="yellow">rate 660.8/s</span></div>
+  <div class="line"><span class="cyan">  PROCESS FORKS    </span> total <span class="bold">7.1M</span>   rate <span class="bold">3.5/s</span></div>
+  <div class="line"></div>
+
+  <div class="line prompt">  $ ./sched-watch --json | python3 -m json.tool</div>
+  <div class="line sep">  {</div>
+  <div class="line">    <span class="cyan">"loadavg"</span>: {<span class="cyan">"load1"</span>:0.21,<span class="cyan">"load5"</span>:0.15,<span class="cyan">"load15"</span>:0.10,<span class="cyan">"running"</span>:1,<span class="cyan">"total"</span>:731,<span class="cyan">"last_pid"</span>:599932},</div>
+  <div class="line">    <span class="cyan">"counters"</span>: {<span class="cyan">"ctxt"</span>:2827614517,<span class="cyan">"forks"</span>:7141039,<span class="cyan">"procs_running"</span>:1,<span class="cyan">"procs_blocked"</span>:0,<span class="cyan">"btime"</span>:1783884256},</div>
+  <div class="line">    <span class="cyan">"rates"</span>: {<span class="cyan">"ctxt_per_s"</span>:1154.8,<span class="cyan">"forks_per_s"</span>:2.9,<span class="cyan">"avg_runnable_pct"</span>:13.5,<span class="cyan">"avg_blocked_pct"</span>:1.6},</div>
+  <div class="line">    <span class="cyan">"cpus"</span>: [{<span class="cyan">"cpu"</span>:<span class="yellow">"cpu0"</span>,<span class="cyan">"runnable_pct"</span>:13.5,<span class="cyan">"blocked_pct"</span>:1.6,<span class="cyan">"switches"</span>:400924918,<span class="cyan">"switches_per_s"</span>:163.7},</div>
+  <div class="line">             {<span class="cyan">"cpu"</span>:<span class="yellow">"cpu1"</span>,<span class="cyan">"runnable_pct"</span>:13.5,<span class="cyan">"blocked_pct"</span>:1.6,<span class="cyan">"switches"</span>:395814915,<span class="cyan">"switches_per_s"</span>:161.7}],</div>
+  <div class="line">    <span class="cyan">"summary"</span>: {<span class="cyan">"cpus"</span>:4,<span class="cyan">"avg_runnable_pct"</span>:13.5,<span class="cyan">"avg_blocked_pct"</span>:1.6}</div>
+  <div class="line sep">  }</div>
+  <div class="line"></div>
+  <div class="line prompt">  $ ./sched-watch --selftest  │</div>
+  <div class="line green">  24 passed, 0 failed</div>
+</div>
+</body>
+</html>
